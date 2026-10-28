@@ -8,7 +8,7 @@ Welcome to the **Multi-Mini-Games Suite**! This repository is a collection of th
 * **Rock, Paper, Scissors:** The classic hand game against an AI opponent. Play individual matches or keep track of your running score.
 * **General Knowledge Quiz:** Test your brain across various topics! Answer multiple-choice trivia questions and see your final score at the end.
 
-## 🚀Features
+## Features
 
 * Interactive and user-friendly command-line interface (CLI)
 * Input validation to prevent crashes from accidental typos
