@@ -14,4 +14,10 @@ Welcome to the **Multi-Mini-Games Suite**! This repository is a collection of th
 * Input validation to prevent crashes from accidental typos
 * Replayability options so you can play again without restarting the script
 * Live score tracking for competitive sessions
+ ## Image for refrence
+ <img width="1673" height="887" alt="image" src="https://github.com/user-attachments/assets/08177475-7d71-43ac-bf64-3ba0b79d1d26" />
+
+ ## link to review the site
+https://devayaan123.github.io/3-in-1-stress-relive-game/
+
 
