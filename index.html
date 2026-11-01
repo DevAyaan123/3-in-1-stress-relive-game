@@ -1,248 +1,180 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3-in-1 Arcade Console</title>
-    <style>
-        body {
-            background-color: #f7f5eb; 
-            color: #2e2e2a;          
-            font-family: 'Courier New', Courier, monospace;
-            padding: 20px;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .terminal-container {
-            width: 100%;
-            max-width: 650px;
-            background-color: #fcfbf7;
-            border: 3px solid #2e2e2a;
-            border-radius: 6px;
-            box-shadow: 6px 6px 0px #2e2e2a;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .terminal-header {
-            background-color: #2e2e2a;
-            color: #f7f5eb;
-            padding: 8px 12px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .terminal-screen {
-            padding: 20px;
-            min-height: 250px;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            line-height: 1.5;
-            border-bottom: 2px dashed #2e2e2a;
-        }
-        .terminal-input-row {
-            display: flex;
-            padding: 12px;
-            background-color: #fcfbf7;
-            align-items: center;
-        }
-        .prompt-symbol {
-            font-weight: bold;
-            margin-right: 10px;
-            font-size: 18px;
-        }
-        .terminal-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: 16px;
-            color: inherit;
-            outline: none;
-        }
-        .action-btn {
-            background-color: #2e2e2a;
-            color: #f7f5eb;
-            border: none;
-            padding: 8px 16px;
-            font-family: inherit;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-left: 10px;
-        }
-        .action-btn:hover {
-            opacity: 0.9;
-        }
-    </style>
+    <title>My First Web Page</title>
 </head>
-<body>
+<body style="background-color: white; color: black; font-family: monospace;">
 
-    <h2 style="margin-top: 0;">3-in-1 Python Arcade Terminal</h2>
+    <h3>My Arcade Game</h3>
+    
+    <div id="output" style="background-color: #eee; border: 1px solid black; width: 600px; height: 350px; padding: 10px; overflow-y: scroll; white-space: pre-wrap;"></div>
+    
+    <br>
 
-    <div class="terminal-container">
-        <div class="terminal-header">bash - game_arcade.py</div>
-        <div class="terminal-screen" id="screen"></div>
-        <div class="terminal-input-row" id="input-area">
-            <span class="prompt-symbol">&gt;</span>
-            <input type="text" id="user-input" class="terminal-input" autofocus autocomplete="off">
-            <button class="action-btn" id="submit-btn" onclick="processInput()">Send</button>
-        </div>
-    </div>
+  
+    <input type="text" id="userInput" placeholder="type here..." style="width: 500px; padding: 5px;" autofocus>
+    <button onclick="handleEnter()" style="padding: 5px 15px;">Enter</button>
 
     <script>
-        const screen = document.getElementById('screen');
-        const userInput = document.getElementById('user-input');
-        const inputArea = document.getElementById('input-area');
+        const outputBox = document.getElementById('output');
+        const inputField = document.getElementById('userInput');
+        let waitingForInput = null;
 
-        let gameState = "GUESS_GAME"; 
-        
-        let random_number = Math.floor(Math.random() * 100) + 1;
-        let attempts = 0;
-
-        let currentQuestionIdx = 0;
-        let quizScore = 0;
-        const quizQuestions = [
-            { q: "Who is the founder of Hack Club?", opts: ["Zach Latta", "Elon Musk", "Jeff Bezos", "Satya Nadella"], ans: 0 },
-            { q: "When was hack club founded?", opts: ["2014", "2020", "2007", "1990"], ans: 0 },
-            { q: "When was the first computer built?", opts: ["2014", "2020", "1822", "1990"], ans: 2 },
-            { q: "When was the first program written?", opts: ["1770", "1843", "1907", "1990"], ans: 1 }
-        ];
-
-        function print(text) {
-            screen.textContent += text + "\n";
-            screen.scrollTop = screen.scrollHeight;
+        function printLog(text = '') {
+            outputBox.textContent += text + '\n';
+            outputBox.scrollTop = outputBox.scrollHeight;
         }
 
-        function init() {
-            print("Welcome to my number guessing game and rock paper scissor, first we will play number guessing game");
-            print("I have selected a random number between 1 and 100");
-            print("Enter your number guess: ");
+        function askInput(promptText) {
+            printLog(promptText);
+            return new Promise(resolve => {
+                waitingForInput = resolve;
+            });
         }
 
-        function processInput() {
-            const val = userInput.value.trim();
-            if (val === "") return;
-            userInput.value = "";
-            print(val); 
-
-            if (gameState === "GUESS_GAME") {
-                handleGuessGame(val);
-            } else if (gameState === "RPS_GAME") {
-                handleRPSGame(val);
-            } else if (gameState === "QUIZ_GAME") {
-                handleQuizGame(val);
+        function handleEnter() {
+            if (waitingForInput) {
+                let val = inputField.value;
+                inputField.value = '';
+                printLog('> ' + val);
+                let resolveFn = waitingForInput;
+                waitingForInput = null;
+                resolveFn(val);
             }
         }
 
-        userInput.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                processInput();
-            }
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleEnter();
         });
 
-        function handleGuessGame(inputVal) {
-            let user_guess = parseInt(inputVal);
-            if (isNaN(user_guess)) {
-                print("Please enter a valid number.");
-                print("Enter your number guess: ");
-                return;
-            }
-
-            attempts++;
-            if (user_guess < random_number) {
-                print("you are tooooooooooooo low");
-                print("Enter your number guess: ");
-            } else if (user_guess > random_number) {
-                print("tooooooooo high! Try again :)");
-                print("Enter your number guess: ");
-            } else {
-                print(`Congratulations! You have guessed the number ${random_number} correctly!`);
-                print(`It took you ${attempts} attempts.`);
-                
-                print("\n" + "=".repeat(40) + "\n");
-                gameState = "RPS_GAME";
-                print("WELCOME TO ROCK, PAPER, SCISSORS!");
-                print("Rules: ROCK beats SCISSORS, SCISSORS beats PAPER, PAPER beats ROCK.");
-                print("Choose:");
-                print("1: Rock");
-                print("2: Paper");
-                print("3: scissors");
-                print("Enter your choice (1-3) : ");
-            }
-        }
-
-        function handleRPSGame(inputVal) {
-            let user_choice = parseInt(inputVal);
-            let user_choice_name = "";
-
-            if (user_choice === 1) user_choice_name = "Rock";
-            else if (user_choice === 2) user_choice_name = "Paper";
-            else if (user_choice === 3) user_choice_name = "scissors";
-            else {
-                print("Invalid Choice! Please choose 1, 2, or 3.");
-                print("Enter your choice (1-3) : ");
-                return;
-            }
-
-            let babayaga = Math.floor(Math.random() * 3) + 1;
-            let computer_choice_name = (babayaga === 1) ? "Rock" : (babayaga === 2) ? "Paper" : "scissors";
-
-            print(`Computer chose: ${computer_choice_name}`);
-
-            if (user_choice_name === computer_choice_name) {
-                print("It is a tie hahaha");
-            } else if (
-                (user_choice_name === "Rock" && computer_choice_name === "scissors") ||
-                (user_choice_name === "Paper" && computer_choice_name === "Rock") ||
-                (user_choice_name === "scissors" && computer_choice_name === "Paper")
-            ) {
-                print("YOU WIN");
-            } else {
-                print("You Lose! hahaha");
-            }
-
-            print("\n" + "=".repeat(40) + "\n");
-            gameState = "QUIZ_GAME";
-            print("welcome to the quiz game!");
-            showQuizQuestion();
-        }
-
-        function showQuizQuestion() {
-            if (currentQuestionIdx < quizQuestions.length) {
-                let item = quizQuestions[currentQuestionIdx];
-                print(item.q);
-                print(`1. ${item.opts[0]}`);
-                print(`2. ${item.opts[1]}`);
-                print(`3. ${item.opts[2]}`);
-                print(`4. ${item.opts[3]}`);
-                print("choose the correct option (1-4): ");
-            } else {
-                print(`Game over! your final score is: ${quizScore} out of 4`);
-                inputArea.innerHTML = `<button class="action-btn" style="margin: 0 auto;" onclick="location.reload()">Restart Terminal</button>`;
-            }
-        }
-
-        function handleQuizGame(inputVal) {
-            let item = quizQuestions[currentQuestionIdx];
-            let isDigit = /^\d+$/.test(inputVal);
+      
+        async function number_guessing_game() {
+            let secretNum = Math.floor(Math.random() * 100) + 1;
+            let tries = 0;
             
-            if (isDigit && (parseInt(inputVal) - 1) === item.ans) {
-                print("correct! yahooooo!!\n");
-                quizScore++;
-            } else {
-                let correct_opt = item.opts[item.ans];
-                print(`Wrong! The correct answer was: ${correct_opt}\n`);
+            printLog("Welcome to my number guessing game and rock paper scissor, first we will play number guessing game");
+            printLog("I have selected a random number between 1 and 100");
+
+            async function makeGuess() {
+                let guessStr = await askInput("Enter your number guess: ");
+                let guess = parseInt(guessStr);
+                tries++;
+                
+                if (isNaN(guess)) {
+                    printLog("bruh, type an actual number lol");
+                    return makeGuess(); 
+                }
+                
+                if (guess < secretNum) {
+                    printLog("you are tooooooooooooo low");
+                    return makeGuess();
+                } else if (guess > secretNum) {
+                    printLog("tooooooooo high! Try again :)");
+                    return makeGuess();
+                } else {
+                    printLog(`Congratulations! You have guessed the number ${secretNum} correctly!`);
+                    printLog(`It took you ${tries} attempts.`);
+                }
             }
 
-            currentQuestionIdx++;
-            showQuizQuestion();
+            await makeGuess();
         }
 
+      
+        function getBotChoice() {
+            let babayaga = Math.floor(Math.random() * 3) + 1;
+            if (babayaga === 1) return "Rock";
+            if (babayaga === 2) return "Paper";
+            if (babayaga === 3) return "scissors";
+        }
 
-        init();
+        async function play_game() {
+            printLog("WELCOME TO ROCK, PAPER, SCISSORS!");
+            printLog("Rules: ROCK beats SCISSORS, SCISSORS beats PAPER, PAPER beats ROCK.");
+            printLog("Choose:");
+            printLog("1: Rock");
+            printLog("2: Paper");
+            printLog("3: scissors");
+            
+            let choiceStr = await askInput("Enter your choice (1-3) : ");
+            let choiceNum = parseInt(choiceStr);
+            let myChoiceName = "";
+            
+            if (choiceNum === 1) myChoiceName = "Rock";
+            else if (choiceNum === 2) myChoiceName = "Paper";
+            else if (choiceNum === 3) myChoiceName = "scissors";
+            else {
+                printLog("Invalid Choice! Please choose 1, 2, or 3.");
+                return;
+            }
+            
+            let pcChoice = getBotChoice();
+            printLog(`Computer chose: ${pcChoice}`);
+            
+            if (myChoiceName === pcChoice) {
+                printLog("It is a tie hahaha");
+            } else if (
+                (myChoiceName === "Rock" && pcChoice === "scissors") ||
+                (myChoiceName === "Paper" && pcChoice === "Rock") ||
+                (myChoiceName === "scissors" && pcChoice === "Paper")
+            ) {
+                printLog("YOU WIN");
+            } else {
+                printLog("You Lose! hahaha");
+            }
+        }
+
+       
+        async function ask_question(q, o1, o2, o3, o4, correctIdx) {
+            printLog(q);
+            printLog(`1. ${o1}`);
+            printLog(`2. ${o2}`);
+            printLog(`3. ${o3}`);
+            printLog(`4. ${o4}`);
+            
+            let ans = await askInput("choose the correct option (1-4): ");
+            let allOpts = [o1, o2, o3, o4];
+            
+            if (ans.trim() !== "" && !isNaN(ans) && parseInt(ans) - 1 === correctIdx) {
+                printLog("correct! yahooooo!!\n");
+                return true;
+            } else {
+                let rightOpt = allOpts[correctIdx];
+                printLog(`Wrong! The correct answer was: ${rightOpt}\n`);
+                return false;
+            }
+        }
+
+        async function quiz_game() {
+            printLog("welcome to the quiz game!");
+            let totalScore = 0;
+            
+            if (await ask_question("Who is the founder of Hack Club?", "Zach Latta", "Elon Musk", "Jeff Bezos", "Satya Nadella", 0)) {
+                totalScore++;
+            }
+            if (await ask_question("When was hack club founded?", "2014", "2020", "2007", "1990", 0)) {
+                totalScore++;
+            }
+            if (await ask_question("When was the first computer built?", "2014", "2020", "1822", "1990", 2)) {
+                totalScore++;
+            }
+            if (await ask_question("When was the first program written?", "1770", "1843", "1907", "1990", 1)) {
+                totalScore++;
+            }
+            
+            printLog(`Game over! your final score is: ${totalScore} out of 4`);
+        }
+
+      
+        async function main() {
+            await number_guessing_game();
+            printLog("\n" + "=".repeat(40) + "\n");
+            await play_game();
+            printLog("\n" + "=".repeat(40) + "\n");
+            await quiz_game();
+        }
+
+        main();
     </script>
 </body>
 </html>
